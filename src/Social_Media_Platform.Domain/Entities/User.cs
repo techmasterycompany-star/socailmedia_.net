@@ -42,3 +42,5 @@ public sealed class User : SoftDelete
 
     public ICollection<Notification> SentNotifications { get; set; } = new List<Notification>();
 }
+
+

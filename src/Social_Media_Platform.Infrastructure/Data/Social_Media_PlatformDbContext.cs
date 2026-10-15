@@ -30,6 +30,12 @@ public sealed class Social_Media_PlatformDbContext(DbContextOptions<Social_Media
 
     public DbSet<Notification> Notifications => Set<Notification>();
 
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
+
+    public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(Social_Media_PlatformDbContext).Assembly);
