@@ -1,6 +1,6 @@
 namespace Social_Media_Platform.Domain.Entities;
 
-public sealed class Comment : BaseEntity
+public sealed class Comment : SoftDelete
 {
     public long PostId { get; set; }
 

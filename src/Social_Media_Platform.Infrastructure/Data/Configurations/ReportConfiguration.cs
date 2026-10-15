@@ -29,6 +29,10 @@ public sealed class ReportConfiguration : IEntityTypeConfiguration<Report>
         builder.Property(report => report.DecisionNotes)
             .HasColumnName("decision_notes")
             .HasColumnType("nvarchar(max)");
+        builder.Property(report => report.Resolution)
+            .HasColumnName("resolution")
+            .HasConversion(new NullableEnumStringConverter<ReportResolution>())
+            .HasMaxLength(30);
         builder.HasIndex(report => report.ReporterId);
         builder.HasIndex(report => report.ReviewedById);
         builder.HasOne(report => report.Reporter)

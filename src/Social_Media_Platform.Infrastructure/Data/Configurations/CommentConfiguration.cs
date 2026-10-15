@@ -27,5 +27,6 @@ public sealed class CommentConfiguration : IEntityTypeConfiguration<Comment>
             .HasForeignKey(comment => comment.AuthorId)
             .OnDelete(DeleteBehavior.NoAction)
             .IsRequired();
+        builder.HasQueryFilter(comment => !comment.IsDeleted);
     }
 }
