@@ -27,8 +27,12 @@ public sealed class Social_Media_PlatformDbContext(DbContextOptions<Social_Media
     public DbSet<StreamMessage> StreamMessages => Set<StreamMessage>();
 
     public DbSet<Report> Reports => Set<Report>();
+    public DbSet<PlatformSetting> PlatformSettings => Set<PlatformSetting>();
+
+    public DbSet<ModerationLog> ModerationLogs => Set<ModerationLog>();
 
     public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<Category> Categories => Set<Category>();
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
