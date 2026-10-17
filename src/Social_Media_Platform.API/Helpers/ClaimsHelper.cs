@@ -1,5 +1,4 @@
-﻿using System.Security.Claims;
-
+using System.Security.Claims;
 namespace Social_Media_Platform.API.Helpers
 {
     public static class ClaimsHelper
@@ -19,3 +18,4 @@ namespace Social_Media_Platform.API.Helpers
         }
     }
 }
+

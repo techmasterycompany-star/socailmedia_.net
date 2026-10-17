@@ -209,14 +209,18 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("AudienceSetting")
+                    b.Property<int>("AudienceSetting")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
+                        .HasColumnType("int")
                         .HasColumnName("audience_setting");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("ended_at");
 
                     b.Property<long>("HostId")
                         .HasColumnType("bigint")
@@ -227,9 +231,19 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                         .HasColumnType("nvarchar(2048)")
                         .HasColumnName("recording_url");
 
-                    b.Property<string>("Status")
+                    b.Property<string>("RoomName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)")
+                        .HasColumnName("room_name");
+
+                    b.Property<DateTime?>("StartAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("start_at");
+
+                    b.Property<int>("Status")
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
+                        .HasColumnType("int")
                         .HasColumnName("status");
 
                     b.Property<string>("Title")
@@ -245,6 +259,9 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("HostId");
+
+                    b.HasIndex("RoomName")
+                        .IsUnique();
 
                     b.ToTable("live_streams", (string)null);
                 });

@@ -8,11 +8,17 @@ public sealed class LiveStream : BaseEntity
 
     public string Title { get; set; } = string.Empty;
 
-    public AudienceSetting? AudienceSetting { get; set; }
+    public AudienceSetting AudienceSetting { get; set; } = AudienceSetting.Public;
 
-    public LiveStreamStatus? Status { get; set; }
+    public LiveStreamStatus Status { get; set; } = LiveStreamStatus.Scheduled;
 
     public string? RecordingUrl { get; set; }
+
+    public string RoomName { get; set; } = string.Empty;
+
+    public DateTime? StartAt { get; set; }
+
+    public DateTime? EndedAt { get; set; }
 
     public User Host { get; set; } = null!;
 

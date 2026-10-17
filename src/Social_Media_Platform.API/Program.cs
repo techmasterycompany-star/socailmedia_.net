@@ -7,6 +7,7 @@ using Social_Media_Platform.API.Exceptions;
 using Social_Media_Platform.Application;
 using Social_Media_Platform.Infrastructure;
 using Social_Media_Platform.Infrastructure.Data;
+using System.Text.Json.Serialization;
 using System.Text;
 
 DotEnvLoader.Load();
@@ -23,6 +24,12 @@ builder.Logging.AddJsonConsole(options =>
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddHealthChecks();
+builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new JsonStringEnumConverter());
+    });
+builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);

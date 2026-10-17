@@ -46,11 +46,11 @@ namespace Social_Media_Platform.Infrastructure.Repositories.Admin
         public async Task<Dictionary<LiveStreamStatus, int>> CountStreamsByStatusAsync()
         {
             var counts = await context.LiveStreams.AsNoTracking()
-                .GroupBy(stream => stream.Status ?? LiveStreamStatus.Scheduled)
-                .Select(group => new {Status = group.Key , Count = group.Count() })
+                .GroupBy(stream => stream.Status)
+                .Select(group => new { Status = group.Key, Count = group.Count() })
                 .ToListAsync();
 
-            return counts.ToDictionary(item => item.Status , item => item.Count);
+            return counts.ToDictionary(item => item.Status, item => item.Count);
         }
 
         public Task<int> CountUsersAsync(UserStatus? status)
