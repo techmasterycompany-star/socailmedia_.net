@@ -17,12 +17,18 @@ public sealed class LiveStreamConfiguration : IEntityTypeConfiguration<LiveStrea
             .IsRequired();
         builder.Property(stream => stream.AudienceSetting)
             .HasColumnName("audience_setting")
-            .HasConversion(new NullableEnumStringConverter<AudienceSetting>())
-            .HasMaxLength(20);
+            .HasMaxLength(20)
+            .IsRequired();
+        builder.Property(stream => stream.RoomName)
+            .HasColumnName("room_name")
+            .HasMaxLength(150)
+            .IsRequired();
+        builder.HasIndex(stream => stream.RoomName)
+            .IsUnique();
         builder.Property(stream => stream.Status)
             .HasColumnName("status")
-            .HasConversion(new NullableEnumStringConverter<LiveStreamStatus>())
-            .HasMaxLength(20);
+            .HasMaxLength(20)
+            .IsRequired();
         builder.Property(stream => stream.RecordingUrl)
             .HasColumnName("recording_url")
             .HasMaxLength(2048);
@@ -32,5 +38,9 @@ public sealed class LiveStreamConfiguration : IEntityTypeConfiguration<LiveStrea
             .HasForeignKey(stream => stream.HostId)
             .OnDelete(DeleteBehavior.NoAction)
             .IsRequired();
+        builder.Property(entity => entity.StartAt)
+            .HasColumnName("start_at");
+        builder.Property(entity => entity.EndedAt)
+            .HasColumnName("ended_at");
     }
 }
