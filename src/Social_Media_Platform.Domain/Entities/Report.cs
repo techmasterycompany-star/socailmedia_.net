@@ -18,6 +18,8 @@ public sealed class Report : BaseEntity
 
     public string? DecisionNotes { get; set; }
 
+    public ReportResolution? Resolution { get; set; }
+
     public User Reporter { get; set; } = null!;
 
     public User? Reviewer { get; set; }
