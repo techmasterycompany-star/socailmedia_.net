@@ -1,5 +1,6 @@
 using Social_Media_Platform.Application.Common.Exceptions;
 using Social_Media_Platform.Application.Interfaces.IRepositories;
+using Social_Media_Platform.Application.Interfaces.IServices;
 using Social_Media_Platform.Domain.Enums;
 
 namespace Social_Media_Platform.Infrastructure.Services.LiveKit;
@@ -7,13 +8,19 @@ namespace Social_Media_Platform.Infrastructure.Services.LiveKit;
 public class HandleLiveKitWebhook
 {
     private readonly ILiveStreamRepository _liveStreamRepository;
+    private readonly INotificationService _notificationService;
 
-    public HandleLiveKitWebhook(ILiveStreamRepository liveStreamRepository)
+    public HandleLiveKitWebhook(
+        ILiveStreamRepository liveStreamRepository,
+        INotificationService notificationService)
     {
         _liveStreamRepository = liveStreamRepository;
+        _notificationService = notificationService;
     }
 
-    public async Task HandleRoomStatusAsync(string eventName, string roomName)
+    public async Task HandleRoomStatusAsync(
+        string eventName,
+        string roomName)
     {
 
         if (string.IsNullOrWhiteSpace(roomName))
@@ -37,6 +44,7 @@ public class HandleLiveKitWebhook
                     liveStream.StartAt = DateTime.UtcNow;
 
                     await _liveStreamRepository.SaveChangesAsync();
+                    await _notificationService.NotifyLiveStreamStartedAsync(liveStream.HostId, liveStream.Id);
                 }
                 break;
 

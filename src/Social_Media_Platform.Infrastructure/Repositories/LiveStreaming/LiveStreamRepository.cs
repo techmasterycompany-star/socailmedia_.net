@@ -15,18 +15,31 @@ namespace Social_Media_Platform.Infrastructure.Repositories.LiveStreaming
             _context = context;
         }
 
-        public async Task<IEnumerable<LiveStream>> GetAllAsync()
+        public async Task<(IReadOnlyList<LiveStream> Items, int TotalCount)> GetAllAsync(int page, int pageSize)
         {
-            return await _context.LiveStreams.ToListAsync();
+            var query = _context.LiveStreams.AsNoTracking();
+            var totalCount = await query.CountAsync();
+            var skip = ((long)page - 1) * pageSize;
+
+            var items = skip >= totalCount
+                ? []
+                : await query.OrderByDescending(ls => ls.CreatedAt)
+                    .ThenByDescending(ls => ls.Id)
+                    .Skip((int)skip)
+                    .Take(pageSize)
+                    .ToListAsync();
+
+            return (items, totalCount);
         }
+
         public async Task<bool> HasActiveStreamAsync(long hostId)
         {
             return await _context.LiveStreams.AnyAsync(ls => ls.HostId == hostId && ls.Status == LiveStreamStatus.Live);
         }
 
-        public async Task<LiveStream?> GetByIdAsync(long hostId)
+        public async Task<LiveStream?> GetByIdAsync(long streamId)
         {
-            return await _context.LiveStreams.FirstOrDefaultAsync(ls => ls.HostId == hostId);
+            return await _context.LiveStreams.FirstOrDefaultAsync(ls => ls.Id == streamId);
         }
 
         public async Task<LiveStream?> GetByRoomNameAsync(string roomName)
@@ -42,6 +55,35 @@ namespace Social_Media_Platform.Infrastructure.Repositories.LiveStreaming
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task AddMessageAsync(StreamMessage message)
+        {
+            _context.StreamMessages.Add(message);
+        }
+
+        public async Task<(IReadOnlyList<StreamMessage> Items, int TotalCount)> GetMessagesByStreamIdAsync(
+            long streamId,
+            int page,
+            int pageSize)
+        {
+            var query = _context.StreamMessages
+                .Where(sm => sm.StreamId == streamId && sm.MessageType == StreamMessageType.Chat)
+                .AsNoTracking();
+            var totalCount = await query.CountAsync();
+            var skip = ((long)page - 1) * pageSize;
+
+            var items = skip >= totalCount
+                ? []
+                : await query.OrderByDescending(sm => sm.CreatedAt)
+                    .ThenByDescending(sm => sm.Id)
+                    .Skip((int)skip)
+                    .Take(pageSize)
+                    .OrderBy(sm => sm.CreatedAt)
+                    .ThenBy(sm => sm.Id)
+                    .ToListAsync();
+
+            return (items, totalCount);
         }
     }
 }

@@ -9,6 +9,8 @@ using Social_Media_Platform.Infrastructure;
 using Social_Media_Platform.Infrastructure.Data;
 using System.Text.Json.Serialization;
 using System.Text;
+using Social_Media_Platform.API.Hubs;
+using Social_Media_Platform.Application.Interfaces.IServices;
 
 DotEnvLoader.Load();
 
@@ -34,6 +36,9 @@ builder.Services.AddControllers();
 builder.Services.AddApplication(builder.Configuration);
 builder.Services.AddInfrastructure(builder.Configuration);
 
+builder.Services.AddSignalR();
+builder.Services.AddScoped<INotificationPublisher, SignalRNotificationPublisher>();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -43,6 +48,20 @@ builder.Services.AddAuthentication(options =>
 {
     var jwtSettings = builder.Configuration.GetSection("Jwt");
     var secretKey = jwtSettings["SecretKey"]!;
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            if (!string.IsNullOrEmpty(accessToken)
+                && context.HttpContext.Request.Path.StartsWithSegments("/hubs/notifications"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
@@ -104,5 +123,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<LiveChatHub>("/hubs/live-chat");
+app.MapHub<NotificationHub>("/hubs/notifications");
 
 app.Run();
