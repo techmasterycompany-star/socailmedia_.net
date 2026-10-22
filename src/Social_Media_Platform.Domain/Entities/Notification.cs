@@ -10,6 +10,14 @@ public sealed class Notification : BaseEntity
 
     public NotificationType Type { get; set; }
 
+    public long? FollowId { get; set; }
+
+    public long? PostId { get; set; }
+
+    public long? CommentId { get; set; }
+
+    public long? LiveStreamId { get; set; }
+
     public bool IsRead { get; set; }
 
     public User Recipient { get; set; } = null!;
