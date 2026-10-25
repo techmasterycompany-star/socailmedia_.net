@@ -39,6 +39,10 @@ public sealed class Social_Media_PlatformDbContext(DbContextOptions<Social_Media
     public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
 
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
+    public DbSet<SavedPost> SavedPosts => Set<SavedPost>();
+    public DbSet<Hashtag> Hashtags => Set<Hashtag>();
+    public DbSet<PostHashtag> PostHashtags => Set<PostHashtag>();
+    public DbSet<Block> Blocks => Set<Block>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Social_Media_Platform.Application.Common.DTOs;
-using Social_Media_Platform.Application.Common.DTOs.Moderator;
+using Social_Media_Platform.Application.DTOS.Moderator;
 using Social_Media_Platform.Application.Interfaces.IServices.Moderator;
 using System.Security.Claims;
 

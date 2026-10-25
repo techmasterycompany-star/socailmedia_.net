@@ -1,4 +1,4 @@
-﻿using Social_Media_Platform.Application.Common.DTOs.Moderator;
+﻿using Social_Media_Platform.Application.DTOS.Moderator;
 
 namespace Social_Media_Platform.Application.Interfaces.IServices.Moderator
 {

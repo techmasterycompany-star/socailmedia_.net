@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Social_Media_Platform.Application.Common.DTOs.Admin;
+using Social_Media_Platform.Application.DTOS.Admin;
 using Social_Media_Platform.Application.Interfaces.IRepositories.Admin;
 using Social_Media_Platform.Domain.Entities;
 using Social_Media_Platform.Infrastructure.Data;

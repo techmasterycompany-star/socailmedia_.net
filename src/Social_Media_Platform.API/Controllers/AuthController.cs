@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Social_Media_Platform.API.Helpers;
 using Social_Media_Platform.Application.Common.DTOs;
 using Social_Media_Platform.Application.DTOs.Auth;
-using Social_Media_Platform.Application.Interfaces;
+using Social_Media_Platform.Application.Interfaces.IServices;
 using System.Security.Claims;
 
 namespace Social_Media_Platform.API.Controllers

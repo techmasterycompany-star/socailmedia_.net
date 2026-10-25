@@ -1,4 +1,4 @@
-﻿using Social_Media_Platform.Application.Common.DTOs.Admin;
+﻿using Social_Media_Platform.Application.DTOS.Admin;
 
 namespace Social_Media_Platform.Application.Interfaces.IServices.Admin
 {

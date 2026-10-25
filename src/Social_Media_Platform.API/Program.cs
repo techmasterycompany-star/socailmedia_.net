@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -7,10 +8,10 @@ using Social_Media_Platform.API.Exceptions;
 using Social_Media_Platform.Application;
 using Social_Media_Platform.Infrastructure;
 using Social_Media_Platform.Infrastructure.Data;
-using System.Text.Json.Serialization;
 using System.Text;
 using Social_Media_Platform.API.Hubs;
 using Social_Media_Platform.Application.Interfaces.IServices;
+using System.Text.Json.Serialization;
 
 DotEnvLoader.Load();
 
@@ -73,6 +74,36 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
         ClockSkew = TimeSpan.Zero
+    };
+});
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(x => x.Value?.Errors.Count > 0)
+            .SelectMany(x => x.Value!.Errors.Select(e =>
+                string.IsNullOrWhiteSpace(e.ErrorMessage)
+                    ? "Invalid request value."
+                    : e.ErrorMessage))
+            .ToList();
+
+        var problemDetails = new ProblemDetails
+        {
+            Status = StatusCodes.Status400BadRequest,
+            Title = "Validation Error",
+            Detail = "One or more validation errors occurred.",
+            Instance = context.HttpContext.Request.Path
+        };
+
+        problemDetails.Extensions["errors"] = errors;
+
+        return new BadRequestObjectResult(new
+        {
+            Success = false,
+            Error = problemDetails
+        });
     };
 });
 

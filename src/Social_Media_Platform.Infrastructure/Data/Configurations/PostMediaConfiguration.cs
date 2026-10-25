@@ -10,17 +10,33 @@ public sealed class PostMediaConfiguration : IEntityTypeConfiguration<PostMedia>
     public void Configure(EntityTypeBuilder<PostMedia> builder)
     {
         builder.ConfigureBaseEntity("post_media");
-        builder.Property(media => media.PostId).HasColumnName("post_id").IsRequired();
+
+        builder.Property(media => media.PostId)
+            .HasColumnName("post_id")
+            .IsRequired();
+
         builder.Property(media => media.MediaType)
             .HasColumnName("media_type")
             .HasConversion(new EnumStringConverter<MediaType>())
             .HasMaxLength(10)
             .IsRequired();
-        builder.Property(media => media.MediaUrl)
-            .HasColumnName("media_url")
-            .HasMaxLength(2048)
+
+        builder.Property(media => media.ContentType)
+            .HasMaxLength(100)
             .IsRequired();
-        builder.HasIndex(media => media.PostId);
+
+        builder.Property(media => media.SizeBytes)
+            .IsRequired();
+
+        builder.Property(media => media.DisplayOrder)
+            .IsRequired();
+
+        builder.HasIndex(media => new
+        {
+            media.PostId,
+            media.DisplayOrder
+        }).IsUnique();
+
         builder.HasOne(media => media.Post)
             .WithMany(post => post.Media)
             .HasForeignKey(media => media.PostId)
