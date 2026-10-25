@@ -393,15 +393,31 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("actor_id");
 
+                    b.Property<long?>("CommentId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("comment_id");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
+
+                    b.Property<long?>("FollowId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("follow_id");
 
                     b.Property<bool>("IsRead")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("is_read");
+
+                    b.Property<long?>("LiveStreamId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("live_stream_id");
+
+                    b.Property<long?>("PostId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("post_id");
 
                     b.Property<long>("RecipientId")
                         .HasColumnType("bigint")
@@ -421,7 +437,17 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
 
                     b.HasIndex("ActorId");
 
-                    b.HasIndex("RecipientId");
+                    b.HasIndex("CommentId");
+
+                    b.HasIndex("FollowId");
+
+                    b.HasIndex("LiveStreamId");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("RecipientId", "IsRead", "CreatedAt");
+
+                    b.HasIndex("RecipientId", "ActorId", "Type", "FollowId", "PostId", "CommentId", "LiveStreamId");
 
                     b.ToTable("notifications", (string)null);
                 });
@@ -1152,6 +1178,26 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                         .HasForeignKey("ActorId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("Social_Media_Platform.Domain.Entities.Comment", null)
+                        .WithMany()
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Social_Media_Platform.Domain.Entities.Follow", null)
+                        .WithMany()
+                        .HasForeignKey("FollowId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Social_Media_Platform.Domain.Entities.LiveStream", null)
+                        .WithMany()
+                        .HasForeignKey("LiveStreamId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Social_Media_Platform.Domain.Entities.Post", null)
+                        .WithMany()
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Social_Media_Platform.Domain.Entities.User", "Recipient")
                         .WithMany("ReceivedNotifications")

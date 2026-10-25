@@ -25,8 +25,31 @@ public sealed class NotificationConfiguration : IEntityTypeConfiguration<Notific
             .HasColumnName("is_read")
             .HasDefaultValue(false)
             .IsRequired();
-        builder.HasIndex(notification => notification.RecipientId);
+        builder.Property(notification => notification.FollowId)
+            .HasColumnName("follow_id");
+        builder.Property(notification => notification.PostId)
+            .HasColumnName("post_id");
+        builder.Property(notification => notification.CommentId)
+            .HasColumnName("comment_id");
+        builder.Property(notification => notification.LiveStreamId)
+            .HasColumnName("live_stream_id");
+        builder.HasIndex(notification => new
+        {
+            notification.RecipientId,
+            notification.IsRead,
+            notification.CreatedAt
+        });
         builder.HasIndex(notification => notification.ActorId);
+        builder.HasIndex(notification => new
+        {
+            notification.RecipientId,
+            notification.ActorId,
+            notification.Type,
+            notification.FollowId,
+            notification.PostId,
+            notification.CommentId,
+            notification.LiveStreamId
+        });
         builder.HasOne(notification => notification.Recipient)
             .WithMany(user => user.ReceivedNotifications)
             .HasForeignKey(notification => notification.RecipientId)
@@ -37,5 +60,21 @@ public sealed class NotificationConfiguration : IEntityTypeConfiguration<Notific
             .HasForeignKey(notification => notification.ActorId)
             .OnDelete(DeleteBehavior.NoAction)
             .IsRequired();
+        builder.HasOne<Follow>()
+            .WithMany()
+            .HasForeignKey(notification => notification.FollowId)
+            .OnDelete(DeleteBehavior.NoAction);
+        builder.HasOne<Post>()
+            .WithMany()
+            .HasForeignKey(notification => notification.PostId)
+            .OnDelete(DeleteBehavior.NoAction);
+        builder.HasOne<Comment>()
+            .WithMany()
+            .HasForeignKey(notification => notification.CommentId)
+            .OnDelete(DeleteBehavior.NoAction);
+        builder.HasOne<LiveStream>()
+            .WithMany()
+            .HasForeignKey(notification => notification.LiveStreamId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

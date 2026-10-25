@@ -19,4 +19,17 @@ public class FollowRepository : IFollowRepository
     {
         return await _context.Follows.AnyAsync(f => f.FollowerId == followerId && f.FollowingId == followingId && f.Status == FollowStatus.Accepted);
     }
+
+    public async Task<IReadOnlyList<long>> GetAcceptedFollowerIdsAsync(
+        long followingId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Follows
+            .Where(follow => follow.FollowingId == followingId
+                && follow.Status == FollowStatus.Accepted
+                && follow.Follower.Status != UserStatus.Blocked)
+            .Select(follow => follow.FollowerId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+    }
 }

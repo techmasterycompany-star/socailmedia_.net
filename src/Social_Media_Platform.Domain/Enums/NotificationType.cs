@@ -4,5 +4,8 @@ public enum NotificationType
 {
     Follow,
     Like,
-    Comment
+    Comment,
+    FollowRequest,
+    FollowAccepted,
+    LiveStreamStarted
 }
