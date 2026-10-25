@@ -1,4 +1,4 @@
-﻿using Social_Media_Platform.Application.Interfaces;
+﻿using Social_Media_Platform.Application.Interfaces.IServices;
 using System.Security.Cryptography;
 
 namespace Social_Media_Platform.Infrastructure.Services

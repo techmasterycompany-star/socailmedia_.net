@@ -17,23 +17,25 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             return false;
         }
 
+
         var (status, title, detail) = exception switch
         {
             KeyNotFoundException or NotFoundException =>
-                (StatusCodes.Status404NotFound, "Resource Not Found",
-                    "The requested resource could not be found."),
+                (StatusCodes.Status404NotFound, "Resource Not Found", exception.Message ?? "The requested resource could not be found."),
+
             ValidationException =>
-                (StatusCodes.Status400BadRequest, "Validation Error", "One or more validation errors occurred."),
+                (StatusCodes.Status400BadRequest, "Validation Error", exception.Message ?? "One or more validation errors occurred."),
+
             ArgumentException or BadRequestException =>
-                (StatusCodes.Status400BadRequest, "Bad Request", "The request could not be processed."),
+                (StatusCodes.Status400BadRequest, "Bad Request", exception.Message ?? "The request could not be processed."),
+
             UnauthorizedAccessException =>
-                (StatusCodes.Status401Unauthorized, "Unauthorized",
-                    "Authentication is required to access this resource."),
+                (StatusCodes.Status401Unauthorized, "Unauthorized", "Authentication is required to access this resource."),
+
             InvalidOperationException or ConflictException =>
-                (StatusCodes.Status409Conflict, "Conflict",
-                    "The request conflicts with the current resource state."),
-            _ =>
-                (StatusCodes.Status500InternalServerError, "Internal Server Error",
+                (StatusCodes.Status409Conflict, "Conflict", exception.Message ?? "The request conflicts with the current resource state."),
+
+            _ =>(StatusCodes.Status500InternalServerError, "Internal Server Error",
                     "An unexpected error occurred.")
         };
 

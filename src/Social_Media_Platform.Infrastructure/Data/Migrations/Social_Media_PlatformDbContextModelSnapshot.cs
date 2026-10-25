@@ -22,6 +22,39 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Social_Media_Platform.Domain.Entities.Block", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("BlockedUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("BlockerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlockedUserId");
+
+                    b.HasIndex("BlockerId", "BlockedUserId")
+                        .IsUnique();
+
+                    b.ToTable("Blocks", t =>
+                        {
+                            t.HasCheckConstraint("CK_Blocks_NoSelfBlock", "[BlockerId] <> [BlockedUserId]");
+                        });
+                });
+
             modelBuilder.Entity("Social_Media_Platform.Domain.Entities.Category", b =>
                 {
                     b.Property<long>("Id")
@@ -198,6 +231,37 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("follows", (string)null);
+                });
+
+            modelBuilder.Entity("Social_Media_Platform.Domain.Entities.Hashtag", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique();
+
+                    b.ToTable("Hashtags");
                 });
 
             modelBuilder.Entity("Social_Media_Platform.Domain.Entities.LiveStream", b =>
@@ -468,6 +532,10 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("author_id");
 
+                    b.Property<long?>("CategoryId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("category_id");
+
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("content");
@@ -476,21 +544,65 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
 
-                    b.Property<bool>("IsPublic")
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("deleted_at");
+
+                    b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
-                        .HasDefaultValue(true)
-                        .HasColumnName("is_public");
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("updated_at");
 
+                    b.Property<int>("Visibility")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AuthorId");
 
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("CreatedAt", "Id");
+
                     b.ToTable("posts", (string)null);
+                });
+
+            modelBuilder.Entity("Social_Media_Platform.Domain.Entities.PostHashtag", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("HashtagId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PostId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HashtagId");
+
+                    b.HasIndex("PostId", "HashtagId")
+                        .IsUnique();
+
+                    b.ToTable("PostHashtags");
                 });
 
             modelBuilder.Entity("Social_Media_Platform.Domain.Entities.PostLike", b =>
@@ -537,9 +649,21 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2")
                         .HasColumnName("created_at");
+
+                    b.Property<string>("DeliveryType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
 
                     b.Property<string>("MediaType")
                         .IsRequired()
@@ -549,13 +673,18 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
 
                     b.Property<string>("MediaUrl")
                         .IsRequired()
-                        .HasMaxLength(2048)
-                        .HasColumnType("nvarchar(2048)")
-                        .HasColumnName("media_url");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("PostId")
                         .HasColumnType("bigint")
                         .HasColumnName("post_id");
+
+                    b.Property<string>("PublicId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2")
@@ -563,7 +692,8 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PostId");
+                    b.HasIndex("PostId", "DisplayOrder")
+                        .IsUnique();
 
                     b.ToTable("post_media", (string)null);
                 });
@@ -779,6 +909,36 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                     b.ToTable("roles", (string)null);
                 });
 
+            modelBuilder.Entity("Social_Media_Platform.Domain.Entities.SavedPost", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("PostId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PostId");
+
+                    b.HasIndex("UserId", "PostId")
+                        .IsUnique();
+
+                    b.ToTable("SavedPosts");
+                });
+
             modelBuilder.Entity("Social_Media_Platform.Domain.Entities.StreamMessage", b =>
                 {
                     b.Property<long>("Id")
@@ -895,6 +1055,25 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("Social_Media_Platform.Domain.Entities.Block", b =>
+                {
+                    b.HasOne("Social_Media_Platform.Domain.Entities.User", "BlockedUser")
+                        .WithMany()
+                        .HasForeignKey("BlockedUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Social_Media_Platform.Domain.Entities.User", "Blocker")
+                        .WithMany()
+                        .HasForeignKey("BlockerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("BlockedUser");
+
+                    b.Navigation("Blocker");
+                });
+
             modelBuilder.Entity("Social_Media_Platform.Domain.Entities.Comment", b =>
                 {
                     b.HasOne("Social_Media_Platform.Domain.Entities.User", "Author")
@@ -1004,7 +1183,33 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("Social_Media_Platform.Domain.Entities.Category", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Author");
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("Social_Media_Platform.Domain.Entities.PostHashtag", b =>
+                {
+                    b.HasOne("Social_Media_Platform.Domain.Entities.Hashtag", "Hashtag")
+                        .WithMany("PostHashtags")
+                        .HasForeignKey("HashtagId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Social_Media_Platform.Domain.Entities.Post", "Post")
+                        .WithMany("PostHashtags")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Hashtag");
+
+                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("Social_Media_Platform.Domain.Entities.PostLike", b =>
@@ -1082,6 +1287,25 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                     b.Navigation("Reviewer");
                 });
 
+            modelBuilder.Entity("Social_Media_Platform.Domain.Entities.SavedPost", b =>
+                {
+                    b.HasOne("Social_Media_Platform.Domain.Entities.Post", "Post")
+                        .WithMany("SavedBy")
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Social_Media_Platform.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Post");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Social_Media_Platform.Domain.Entities.StreamMessage", b =>
                 {
                     b.HasOne("Social_Media_Platform.Domain.Entities.User", "Sender")
@@ -1112,6 +1336,11 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("Social_Media_Platform.Domain.Entities.Hashtag", b =>
+                {
+                    b.Navigation("PostHashtags");
+                });
+
             modelBuilder.Entity("Social_Media_Platform.Domain.Entities.LiveStream", b =>
                 {
                     b.Navigation("Messages");
@@ -1124,6 +1353,10 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                     b.Navigation("Likes");
 
                     b.Navigation("Media");
+
+                    b.Navigation("PostHashtags");
+
+                    b.Navigation("SavedBy");
                 });
 
             modelBuilder.Entity("Social_Media_Platform.Domain.Entities.Role", b =>

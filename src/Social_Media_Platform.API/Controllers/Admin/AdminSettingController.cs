@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Social_Media_Platform.Application.Common.DTOs;
-using Social_Media_Platform.Application.Common.DTOs.Admin;
+using Social_Media_Platform.Application.DTOS.Admin;
 using Social_Media_Platform.Application.Interfaces.IServices.Admin;
 using System.Security.Claims;
 

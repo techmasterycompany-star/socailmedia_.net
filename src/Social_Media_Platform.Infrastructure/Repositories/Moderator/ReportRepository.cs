@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Social_Media_Platform.Application.Common.DTOs.Moderator;
+using Social_Media_Platform.Application.DTOS.Moderator;
 using Social_Media_Platform.Application.Interfaces.IRepositories.Moderator;
 using Social_Media_Platform.Domain.Entities;
 using Social_Media_Platform.Domain.Enums;
