@@ -27,6 +27,12 @@ public sealed class LiveStreamAccessService : ILiveStreamAccessService
         if (stream.Status != LiveStreamStatus.Live)
             throw new InvalidOperationException("The live stream is not active.");
 
+        if (userId != stream.HostId
+            && await _followRepository.IsBlockedAsync(userId, stream.HostId))
+        {
+            throw new NotFoundException($"No live stream found with ID {streamId}.");
+        }
+
         await ValidateFollowingAsync(userId, stream);
 
         return stream;

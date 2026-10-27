@@ -22,6 +22,41 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Social_Media_Platform.Domain.Entities.Block", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("BlockedId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("blocked_id");
+
+                    b.Property<long>("BlockerId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("blocker_id");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlockedId");
+
+                    b.HasIndex("BlockerId", "BlockedId")
+                        .IsUnique();
+
+                    b.ToTable("blocks", (string)null);
+                });
+
             modelBuilder.Entity("Social_Media_Platform.Domain.Entities.Category", b =>
                 {
                     b.Property<long>("Id")
@@ -919,6 +954,25 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("users", (string)null);
+                });
+
+            modelBuilder.Entity("Social_Media_Platform.Domain.Entities.Block", b =>
+                {
+                    b.HasOne("Social_Media_Platform.Domain.Entities.User", "Blocked")
+                        .WithMany()
+                        .HasForeignKey("BlockedId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Social_Media_Platform.Domain.Entities.User", "Blocker")
+                        .WithMany()
+                        .HasForeignKey("BlockerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Blocked");
+
+                    b.Navigation("Blocker");
                 });
 
             modelBuilder.Entity("Social_Media_Platform.Domain.Entities.Comment", b =>
