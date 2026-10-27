@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Social_Media_Platform.Application.DTOs.Auth;
-using Social_Media_Platform.Application.Interfaces;
+using Social_Media_Platform.Application.Interfaces.IRepositories;
+using Social_Media_Platform.Application.Interfaces.IServices;
 using Social_Media_Platform.Application.Options;
 using Social_Media_Platform.Domain.Entities;
 using Social_Media_Platform.Domain.Enums;

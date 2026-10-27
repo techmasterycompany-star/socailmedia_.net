@@ -1,5 +1,5 @@
-﻿using Social_Media_Platform.Application.Common.DTOs.Moderator;
-using Social_Media_Platform.Application.Common.Exceptions;
+﻿using Social_Media_Platform.Application.Common.Exceptions;
+using Social_Media_Platform.Application.DTOS.Moderator;
 using Social_Media_Platform.Application.Interfaces.IRepositories.Moderator;
 using Social_Media_Platform.Application.Interfaces.IServices.Moderator;
 using Social_Media_Platform.Domain.Entities;
@@ -22,10 +22,10 @@ namespace Social_Media_Platform.Application.Services.Moderator
 
             var post = await repo.GetPostAsync(id)
                 ?? throw new NotFoundException("The requested post could not be found");
-            if(!post.IsPublic)
+            if(post.IsHidden)
                 throw new ConflictException("The post is already hidden from public view");
 
-            post.IsPublic = false;
+            post.IsHidden = true;
             await repo.UpdatePostAsync(post);
 
             await LogAsync(actor, ModerationTargetType.Post, post.Id, ModerationAction.Hidden, reason);
