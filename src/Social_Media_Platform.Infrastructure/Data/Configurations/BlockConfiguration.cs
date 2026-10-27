@@ -1,33 +1,27 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Social_Media_Platform.Domain.Entities;
 
-namespace Social_Media_Platform.Infrastructure.Data.Configurations
+namespace Social_Media_Platform.Infrastructure.Data.Configurations;
+
+public sealed class BlockConfiguration : IEntityTypeConfiguration<Block>
 {
-    public sealed class BlockConfiguration : IEntityTypeConfiguration<Block>
+    public void Configure(EntityTypeBuilder<Block> builder)
     {
-        public void Configure(EntityTypeBuilder<Block> builder)
-        {
-            builder.HasOne(block => block.Blocker)
-                .WithMany()
-                .HasForeignKey(block => block.BlockerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasOne(block => block.BlockedUser)
-                .WithMany()
-                .HasForeignKey(block => block.BlockedUserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasIndex(block => new
-            {
-                block.BlockerId,
-                block.BlockedUserId
-            }).IsUnique();
-
-            builder.ToTable(table =>
-                table.HasCheckConstraint(
-                    "CK_Blocks_NoSelfBlock",
-                    "[BlockerId] <> [BlockedUserId]"));
-        }
+        builder.ConfigureBaseEntity("blocks");
+        builder.Property(block => block.BlockerId).HasColumnName("blocker_id").IsRequired();
+        builder.Property(block => block.BlockedId).HasColumnName("blocked_id").IsRequired();
+        builder.HasIndex(block => new { block.BlockerId, block.BlockedId }).IsUnique();
+        builder.HasIndex(block => block.BlockedId);
+        builder.HasOne(block => block.Blocker)
+            .WithMany()
+            .HasForeignKey(block => block.BlockerId)
+            .OnDelete(DeleteBehavior.NoAction)
+            .IsRequired();
+        builder.HasOne(block => block.Blocked)
+            .WithMany()
+            .HasForeignKey(block => block.BlockedId)
+            .OnDelete(DeleteBehavior.NoAction)
+            .IsRequired();
     }
 }

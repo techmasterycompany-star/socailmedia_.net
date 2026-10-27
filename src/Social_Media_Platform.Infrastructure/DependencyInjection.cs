@@ -48,6 +48,8 @@ public static class DependencyInjection
         services.AddScoped<IAdminSettingsRepository, AdminSettingsRepository>();
         services.AddScoped<DbSeeder>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserManagementRepository, UserManagementRepository>();
+        services.AddScoped<IUserManagementService, UserManagementService>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();

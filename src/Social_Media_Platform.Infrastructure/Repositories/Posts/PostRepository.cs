@@ -39,8 +39,8 @@ namespace Social_Media_Platform.Infrastructure.Repositories.Posts
 
         public Task<bool> IsBlockedEitherWayAsync(long firstUserId, long secondUserId, CancellationToken ct) =>
             dbContext.Blocks.AnyAsync(block =>
-                (block.BlockerId == firstUserId && block.BlockedUserId == secondUserId) ||
-                (block.BlockerId == secondUserId && block.BlockedUserId == firstUserId), ct);
+                (block.BlockerId == firstUserId && block.BlockedId == secondUserId) ||
+                (block.BlockerId == secondUserId && block.BlockedId == firstUserId), ct);
 
         public Task<bool> IsAcceptedFollowerAsync(long followerId, long followingId, CancellationToken ct) =>
             dbContext.Follows.AnyAsync(follow =>

@@ -14,6 +14,8 @@ public sealed class Social_Media_PlatformDbContext(DbContextOptions<Social_Media
 
     public DbSet<Follow> Follows => Set<Follow>();
 
+    public DbSet<Block> Blocks => Set<Block>();
+
     public DbSet<Post> Posts => Set<Post>();
 
     public DbSet<PostMedia> PostMedia => Set<PostMedia>();
@@ -42,7 +44,6 @@ public sealed class Social_Media_PlatformDbContext(DbContextOptions<Social_Media
     public DbSet<SavedPost> SavedPosts => Set<SavedPost>();
     public DbSet<Hashtag> Hashtags => Set<Hashtag>();
     public DbSet<PostHashtag> PostHashtags => Set<PostHashtag>();
-    public DbSet<Block> Blocks => Set<Block>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

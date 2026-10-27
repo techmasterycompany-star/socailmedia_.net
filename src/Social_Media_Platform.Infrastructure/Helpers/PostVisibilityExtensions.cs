@@ -15,8 +15,8 @@ namespace Social_Media_Platform.Infrastructure.Helpers
                 .Where(post => !post.IsDeleted && !post.IsHidden && !post.Author.IsDeleted)
                 .Where(post => post.AuthorId == viewerId ||
                     !dbContext.Blocks.Any(block =>
-                        block.BlockerId == viewerId && block.BlockedUserId == post.AuthorId ||
-                        block.BlockerId == post.AuthorId && block.BlockedUserId == viewerId) &&
+                        block.BlockerId == viewerId && block.BlockedId == post.AuthorId ||
+                        block.BlockerId == post.AuthorId && block.BlockedId == viewerId) &&
                      (post.Author.Profile == null || !post.Author.Profile.IsPrivate ||
                       acceptedFollows.Any(follow => follow.FollowingId == post.AuthorId)) &&
                      (post.Visibility == PostVisibility.Public ||

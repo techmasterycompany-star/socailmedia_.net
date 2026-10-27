@@ -119,8 +119,8 @@ namespace Social_Media_Platform.Infrastructure.Repositories.Posts
                 .Where(user => user.Id != viewerId && !user.IsDeleted &&
                     user.Username.ToLower().Contains(normalizedQuery))
                 .Where(user => !dbContext.Blocks.Any(block =>
-                    (block.BlockerId == viewerId && block.BlockedUserId == user.Id) ||
-                    (block.BlockerId == user.Id && block.BlockedUserId == viewerId)));
+                    (block.BlockerId == viewerId && block.BlockedId == user.Id) ||
+                    (block.BlockerId == user.Id && block.BlockedId == viewerId)));
         }
     }
 }
