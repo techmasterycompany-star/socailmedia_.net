@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -96,35 +96,6 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                 defaultValue: 0L);
 
             migrationBuilder.CreateTable(
-                name: "Blocks",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    BlockerId = table.Column<long>(type: "bigint", nullable: false),
-                    BlockedUserId = table.Column<long>(type: "bigint", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Blocks", x => x.Id);
-                    table.CheckConstraint("CK_Blocks_NoSelfBlock", "[BlockerId] <> [BlockedUserId]");
-                    table.ForeignKey(
-                        name: "FK_Blocks_users_BlockedUserId",
-                        column: x => x.BlockedUserId,
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Blocks_users_BlockerId",
-                        column: x => x.BlockerId,
-                        principalTable: "users",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Hashtags",
                 columns: table => new
                 {
@@ -213,17 +184,6 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Blocks_BlockedUserId",
-                table: "Blocks",
-                column: "BlockedUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Blocks_BlockerId_BlockedUserId",
-                table: "Blocks",
-                columns: new[] { "BlockerId", "BlockedUserId" },
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Hashtags_NormalizedName",
                 table: "Hashtags",
                 column: "NormalizedName",
@@ -266,9 +226,6 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_posts_categories_category_id",
                 table: "posts");
-
-            migrationBuilder.DropTable(
-                name: "Blocks");
 
             migrationBuilder.DropTable(
                 name: "PostHashtags");
