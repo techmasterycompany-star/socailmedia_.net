@@ -6,6 +6,5 @@ public sealed record UserRelationshipResponse(
     bool IsFollowedBy,
     bool HasPendingRequest,
     int FollowerCount,
-    int FollowingCount,
-    int IncomingPendingRequestCount,
-    int OutgoingPendingRequestCount);
+    int FollowingCount
+);

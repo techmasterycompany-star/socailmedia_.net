@@ -90,6 +90,7 @@ public sealed class UserManagementRepository : IUserManagementRepository
             IsolationLevel.Serializable,
             cancellationToken);
         await EnsureUsersExistAsync(blockerId, blockedId, cancellationToken);
+        await EnsureTargetIsNotPrivilegedAsync(blockedId, cancellationToken);
 
         await _followRepository.RemoveRelationshipsAsync(blockerId, blockedId, cancellationToken);
 
@@ -144,6 +145,20 @@ public sealed class UserManagementRepository : IUserManagementRepository
         if (existingUsers.Count != 2 || existingUsers.Any(user => user.Status == UserStatus.Blocked))
         {
             throw new NotFoundException("The requested user could not be found.");
+        }
+    }
+
+    private async Task EnsureTargetIsNotPrivilegedAsync(
+        long userId,
+        CancellationToken cancellationToken)
+    {
+        var role = await _context.Users
+            .Where(user => user.Id == userId)
+            .Select(user => user.Role.Name)
+            .SingleAsync(cancellationToken);
+        if (role is RoleName.Admin or RoleName.Moderator)
+        {
+            throw new BadRequestException("You cannot block an administrator or moderator.");
         }
     }
 
