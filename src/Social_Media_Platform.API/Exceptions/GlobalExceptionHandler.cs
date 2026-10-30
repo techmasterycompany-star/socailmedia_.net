@@ -23,11 +23,14 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             KeyNotFoundException or NotFoundException =>
                 (StatusCodes.Status404NotFound, "Resource Not Found", exception.Message ?? "The requested resource could not be found."),
 
-            ValidationException =>
+            FluentValidation.ValidationException or System.ComponentModel.DataAnnotations.ValidationException =>
                 (StatusCodes.Status400BadRequest, "Validation Error", exception.Message ?? "One or more validation errors occurred."),
 
             ArgumentException or BadRequestException =>
                 (StatusCodes.Status400BadRequest, "Bad Request", exception.Message ?? "The request could not be processed."),
+
+            AuthenticationException =>
+                (StatusCodes.Status401Unauthorized, "Authentication Failed", exception.Message ?? "Authentication Failed"),
 
             UnauthorizedAccessException =>
                 (StatusCodes.Status401Unauthorized, "Unauthorized", "Authentication is required to access this resource."),

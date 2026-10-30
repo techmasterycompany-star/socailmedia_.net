@@ -8,6 +8,8 @@ namespace Social_Media_Platform.Application.Interfaces.IServices
     {
         Task<PostDto> CreateAsync(long authorId, CreatePostRequest request, CancellationToken cancellationToken);
         Task<PostDto> GetByIdAsync(long postId, long viewerId, CancellationToken cancellationToken);
+        Task<PagedResult<PostDto>> GetAuthorPostsAsync(long authorId, long viewerId, int page, int pageSize, CancellationToken cancellationToken);
+
         Task<PostDto> UpdateAsync(long postId, long currentUserId, UpdatePostRequest request, CancellationToken cancellationToken);
         Task DeleteAsync(long postId, long currentUserId, CancellationToken cancellationToken);
         Task<ShareLinkDto> GetShareLinkAsync(long postId, long viewerId, CancellationToken cancellationToken);

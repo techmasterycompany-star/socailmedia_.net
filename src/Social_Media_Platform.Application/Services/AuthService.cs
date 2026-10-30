@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Social_Media_Platform.Application.Common.Exceptions;
 using Social_Media_Platform.Application.DTOs.Auth;
 using Social_Media_Platform.Application.Interfaces.IRepositories;
 using Social_Media_Platform.Application.Interfaces.IServices;
@@ -170,7 +171,7 @@ namespace Social_Media_Platform.Application.Services
 
             if (user is null || !_passwordService.VerifyPassword(request.Password, user.Password))
             {
-                throw new UnauthorizedAccessException("Invalid credentials.");
+                throw new AuthenticationException("Invalid credentials.");
             }
 
             EnsureEligible(user);
@@ -201,26 +202,21 @@ namespace Social_Media_Platform.Application.Services
         public async Task<IssuedTokens> RefreshAsync(string refreshToken, string? ipAddress, CancellationToken cancellationToken = default)
         {
             var stored = await _refreshTokensRepo.GetByHashAsync(_tokenService.HashToken(refreshToken), cancellationToken)
-                ?? throw new UnauthorizedAccessException("Invalid refresh token.");
+                ?? throw new AuthenticationException("Invalid refresh token.");
 
             if (stored.IsRevoked)
             {
                 await RevokeAllTokensAsync(stored.UserId, ipAddress, cancellationToken);
-
-                throw new UnauthorizedAccessException("Refresh token reuse detected.");
+                throw new AuthenticationException("Refresh token reuse detected.");
             }
 
             if (stored.IsExpired)
-            {
-                throw new UnauthorizedAccessException("Refresh token expired.");
-            }
+                throw new AuthenticationException("Refresh token expired.");
 
             EnsureEligible(stored.User);
 
             if (!stored.User.IsVerified)
-            {
-                throw new UnauthorizedAccessException("Email verification is required.");
-            }
+                throw new AuthenticationException("Email verification is required.");
 
             var response = _tokenService.GenerateAccessToken(stored.User, stored.User.Role.Name);
             var rawNewToken = _tokenService.GenerateSecureToken();
@@ -237,11 +233,10 @@ namespace Social_Media_Platform.Application.Services
 
             stored.RevokedAt = DateTime.UtcNow;
             stored.RevokedByIp = ipAddress;
-            stored.ReplacedByTokenId = newToken.Id;
+            stored.ReplacedByToken = newToken;
             stored.UpdatedAt = DateTime.UtcNow;
 
             _refreshTokensRepo.Update(stored);
-
             await _refreshTokensRepo.AddAsync(newToken, cancellationToken);
             await _refreshTokensRepo.SaveChangesAsync(cancellationToken);
 
@@ -345,7 +340,7 @@ namespace Social_Media_Platform.Application.Services
 
             if (!_passwordService.VerifyPassword(currentPassword, user.Password))
             {
-                throw new UnauthorizedAccessException("Current password is incorrect.");
+                throw new AuthenticationException("Current password is incorrect.");
             }
 
             user.Password = _passwordService.HashPassword(newPassword);
@@ -385,7 +380,7 @@ namespace Social_Media_Platform.Application.Services
         {
             if (user.IsDeleted || user.Status != UserStatus.Active)
             {
-                throw new UnauthorizedAccessException("This account is not eligible to authenticate.");
+                throw new AuthenticationException("This account is not eligible to authenticate.");
             }
         }
 

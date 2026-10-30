@@ -7,6 +7,7 @@ public sealed class RefreshToken : BaseEntity
     public DateTime ExpiresAt { get; set; }
     public DateTime? RevokedAt { get; set; }
     public long? ReplacedByTokenId { get; set; }
+    public RefreshToken? ReplacedByToken { get; set; }
     public string? CreatedByIp { get; set; }
     public string? RevokedByIp { get; set; }
     public User User { get; set; } = null!;

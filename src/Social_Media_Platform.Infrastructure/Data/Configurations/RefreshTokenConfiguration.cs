@@ -28,7 +28,7 @@ public sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<Refresh
             .OnDelete(DeleteBehavior.Cascade)
             .IsRequired();
 
-        builder.HasOne<RefreshToken>()
+        builder.HasOne(token => token.ReplacedByToken)
             .WithMany()
             .HasForeignKey(token => token.ReplacedByTokenId)
             .OnDelete(DeleteBehavior.NoAction);

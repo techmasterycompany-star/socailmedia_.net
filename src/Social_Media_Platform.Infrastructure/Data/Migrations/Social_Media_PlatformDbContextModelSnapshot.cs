@@ -1303,7 +1303,7 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Social_Media_Platform.Domain.Entities.RefreshToken", b =>
                 {
-                    b.HasOne("Social_Media_Platform.Domain.Entities.RefreshToken", null)
+                    b.HasOne("Social_Media_Platform.Domain.Entities.RefreshToken", "ReplacedByToken")
                         .WithMany()
                         .HasForeignKey("ReplacedByTokenId")
                         .OnDelete(DeleteBehavior.NoAction);
@@ -1313,6 +1313,8 @@ namespace Social_Media_Platform.Infrastructure.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ReplacedByToken");
 
                     b.Navigation("User");
                 });

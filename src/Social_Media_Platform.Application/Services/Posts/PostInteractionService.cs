@@ -107,6 +107,7 @@ namespace Social_Media_Platform.Application.Services.Posts
 
         public async Task<SaveStateDto> UnsavePostAsync(long postId, long userId, CancellationToken cancellationToken)
         {
+            var post = await postRepository.GetByIdAsync(postId, cancellationToken) ?? throw new NotFoundException("Post not found.");
             await interactionRepository.RemoveSavedPostAsync(postId, userId, cancellationToken);
             await interactionRepository.SaveChangesAsync(cancellationToken);
 

@@ -104,6 +104,25 @@ namespace Social_Media_Platform.Infrastructure.Repositories.Posts
             return (items, totalCount);
         }
 
+        public async Task<(IReadOnlyList<PostDto> Items, int TotalCount)> GetAuthorPostsPageAsync(long authorId, long viewerId, int page, int pageSize, CancellationToken ct)
+        {
+            var query = GetBasePostQuery()
+                .Where(post => post.AuthorId == authorId);
+
+            if (viewerId != authorId)
+                query = query.VisibleTo(dbContext, viewerId);
+
+            var totalCount = await query.CountAsync(ct);
+
+            var items = await query
+                .OrderByDescending(post => post.CreatedAt).ThenByDescending(post => post.Id)
+                .Skip((int)Math.Min(((long)page - 1) * pageSize, int.MaxValue)).Take(pageSize)
+                .Select(PostDtoProjection.ForViewer(viewerId))
+                .ToListAsync(ct);
+
+            return (items, totalCount);
+        }
+
         private IQueryable<Post> GetPostQuery() =>
             GetBasePostQuery()
                 .Include(post => post.Author).ThenInclude(author => author.Profile)

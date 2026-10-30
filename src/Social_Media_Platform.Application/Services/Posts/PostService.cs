@@ -190,7 +190,14 @@ namespace Social_Media_Platform.Application.Services.Posts
 
             return new ShareLinkDto($"{_options.ClientBaseUrl.TrimEnd('/')}/posts/{post.Id}");
         }
+        public async Task<PagedResult<PostDto>> GetAuthorPostsAsync(long authorId, long viewerId, int page, int pageSize, CancellationToken cancellationToken)
+        {
+            (page, pageSize) = NormalizePagination(page, pageSize);
 
+            var (posts, totalCount) = await _postRepository.GetAuthorPostsPageAsync(authorId, viewerId, page, pageSize, cancellationToken);
+
+            return PagedResult<PostDto>.Create(posts, page, pageSize, totalCount);
+        }
         public async Task<PagedResult<PostDto>> GetSavedAsync(long userId, int page, int pageSize, CancellationToken cancellationToken)
         {
             (page, pageSize) = NormalizePagination(page, pageSize);
