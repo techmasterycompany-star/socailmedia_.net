@@ -36,7 +36,38 @@ The API exposes `GET /health` with the standard success/data response envelope.
 
 ASP.NET Core loads `appsettings.json`, the matching `appsettings.{Environment}.json`, and environment variables. Use double underscores for nested environment keys. Keep secret values in environment variables or .NET User Secrets; do not commit secrets to settings files.
 
-Application and infrastructure registrations belong in their respective `DependencyInjection` classes. Infrastructure is intentionally unconfigured until a persistence or external-service choice is provided. Unexpected errors return a safe generic detail in the standard ProblemDetails error envelope.
+Application and infrastructure registrations belong in their respective `DependencyInjection` classes. Unexpected errors return a safe generic detail in the standard ProblemDetails error envelope.
+
+## Database and migrations
+
+The Infrastructure project owns the SQL Server `Social_Media_PlatformDbContext`, EF Core migrations, and an idempotent `DbSeeder` for the initial role records. On API startup, pending migrations are applied before the seeder runs; failures are allowed to fail startup. For local development, put the connection string in a root `.env` file using the ASP.NET Core environment-variable key:
+
+```dotenv
+ConnectionStrings__DefaultConnection="Server=<server>;Database=<database>;User Id=<user>;Password=<password>;TrustServerCertificate=True"
+```
+
+The API and EF Core design-time factory load `.env` from the solution root or a parent directory. The environment value overrides `ConnectionStrings:DefaultConnection` in appsettings. Keep `.env` private; it is ignored by Git. Production deployments should use their secret/environment configuration provider instead. Automatic startup migrations can cause concurrent DDL attempts when multiple API instances start together, so coordinate deployments to ensure only one instance performs startup migration at a time.
+
+Startup also seeds two administrator accounts. Add these values to the same private `.env` file; do not commit the file or share its credentials:
+
+```dotenv
+SeedUsers__Admin1__Email="<first-admin-email>"
+SeedUsers__Admin1__Username="<first-admin-username>"
+SeedUsers__Admin1__Password="<first-admin-password>"
+SeedUsers__Admin2__Email="<second-admin-email>"
+SeedUsers__Admin2__Username="<second-admin-username>"
+SeedUsers__Admin2__Password="<second-admin-password>"
+```
+
+Both passwords are stored as BCrypt hashes. The seeder does not reset credentials on subsequent starts; already seeded users are left unchanged. Keep the `.env` file accessible only to trusted users on the machine—ignoring a file in Git prevents committing it, but does not itself encrypt or restrict local file access.
+
+Run EF commands from the solution root, with Infrastructure as the migrations project and API as the startup project:
+
+```powershell
+$env:ConnectionStrings__DefaultConnection = "<connection-string>"
+dotnet ef migrations add InitialSchema --project .\src\Social_Media_Platform.Infrastructure\Social_Media_Platform.Infrastructure.csproj --startup-project .\src\Social_Media_Platform.API\Social_Media_Platform.API.csproj --output-dir Data\Migrations
+dotnet ef database update --project .\src\Social_Media_Platform.Infrastructure\Social_Media_Platform.Infrastructure.csproj --startup-project .\src\Social_Media_Platform.API\Social_Media_Platform.API.csproj
+```
 
 ## Packages
 

@@ -40,6 +40,7 @@ project.fragment.lock.json
 
 ## User-specific files
 *.env
+.env
 appsettings.Development.json
 appsettings.Local.json
 
