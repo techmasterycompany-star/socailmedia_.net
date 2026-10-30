@@ -45,8 +45,9 @@ public class FollowRepository : IFollowRepository
         CancellationToken cancellationToken)
     {
         await EnsureProfileVisibleAsync(viewerId, userId, cancellationToken);
-        return await ProfileQuery(viewerId)
-            .SingleOrDefaultAsync(profile => profile.Id == userId, cancellationToken)
+        var profiles = _context.Profiles.Where(profile => profile.UserId == userId);
+        return await ProfileQuery(viewerId, profiles)
+            .SingleOrDefaultAsync(cancellationToken)
             ?? throw new NotFoundException("The requested profile could not be found.");
     }
 
@@ -58,7 +59,7 @@ public class FollowRepository : IFollowRepository
         CancellationToken cancellationToken)
     {
         ValidatePage(page, pageSize);
-        query = query?.Trim() ?? string.Empty;
+        query = query.Trim();
         if (query.Length is < 2 or > 100)
         {
             throw new BadRequestException("Search query must contain between 2 and 100 characters.");
@@ -67,7 +68,6 @@ public class FollowRepository : IFollowRepository
         var profiles = _context.Profiles.Where(profile =>
             profile.UserId != viewerId
             && profile.User.Status != UserStatus.Blocked
-            && (profile.User.Username.Contains(query) || profile.DisplayName.Contains(query))
             && (!profile.IsPrivate
                 || _context.Follows.Any(follow => follow.FollowerId == viewerId
                     && follow.FollowingId == profile.UserId
@@ -75,12 +75,16 @@ public class FollowRepository : IFollowRepository
             && !_context.Blocks.Any(block =>
                 (block.BlockerId == viewerId && block.BlockedId == profile.UserId)
                 || (block.BlockedId == viewerId && block.BlockerId == profile.UserId)));
+        profiles = profiles.Where(profile =>
+            profile.User.Username.Contains(query) || profile.DisplayName.Contains(query));
+
         var totalCount = await profiles.CountAsync(cancellationToken);
-        var items = await ProfileQuery(viewerId, profiles)
-            .OrderBy(profile => profile.Username)
-            .ThenBy(profile => profile.Id)
+        var pagedProfiles = profiles
+            .OrderBy(profile => profile.User.Username)
+            .ThenBy(profile => profile.UserId)
             .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Take(pageSize);
+        var items = await ProfileQuery(viewerId, pagedProfiles)
             .ToListAsync(cancellationToken);
 
         return PagedResult<UserProfileResponse>.Create(items, page, pageSize, totalCount);
@@ -109,7 +113,11 @@ public class FollowRepository : IFollowRepository
         await using var transaction = await _context.Database.BeginTransactionAsync(
             IsolationLevel.Serializable, cancellationToken);
         await EnsureUsersExistAsync(followerId, followingId, cancellationToken);
-        await EnsureNotBlockedAsync(followerId, followingId, cancellationToken);
+        await EnsureTargetIsNotPrivilegedAsync(followingId, "follow", cancellationToken);
+        if (await IsBlockedAsync(followerId, followingId))
+        {
+            throw new BadRequestException("You cannot follow a user when either of you has blocked the other.");
+        }
 
         var follow = await FindFollowAsync(followerId, followingId, cancellationToken);
         if (follow is null)
@@ -279,11 +287,7 @@ public class FollowRepository : IFollowRepository
             _context.Follows.Any(follow =>
                 follow.FollowerId == profile.UserId
                 && follow.FollowingId == viewerId
-                && follow.Status == FollowStatus.Accepted),
-            _context.Follows.Any(follow =>
-                follow.FollowerId == viewerId
-                && follow.FollowingId == profile.UserId
-                && follow.Status == FollowStatus.Pending)));
+                && follow.Status == FollowStatus.Accepted)));
     }
 
     private async Task<PagedResult<UserProfileResponse>> GetRelatedProfilesAsync(
@@ -297,28 +301,40 @@ public class FollowRepository : IFollowRepository
         ValidatePage(page, pageSize);
         await EnsureProfileVisibleAsync(viewerId, userId, cancellationToken);
 
-        var profiles = _context.Follows
-            .Where(follow => follow.Status == FollowStatus.Accepted
-                && (following ? follow.FollowerId == userId : follow.FollowingId == userId)
-                && (following ? follow.Follower.Status : follow.Following.Status) != UserStatus.Blocked
-                && !_context.Blocks.Any(block =>
-                    (block.BlockerId == viewerId
-                        && block.BlockedId == (following ? follow.FollowingId : follow.FollowerId))
-                    || (block.BlockedId == viewerId
-                        && block.BlockerId == (following ? follow.FollowingId : follow.FollowerId))))
-            .Select(follow => following ? follow.Following.Profile! : follow.Follower.Profile!)
-            .Where(profile => profile.UserId == viewerId
+        IQueryable<Profile> profiles;
+        if (following)
+        {
+            profiles = _context.Follows
+                .Where(follow => follow.FollowerId == userId
+                    && follow.Status == FollowStatus.Accepted)
+                .Select(follow => follow.Following.Profile!);
+        }
+        else
+        {
+            profiles = _context.Follows
+                .Where(follow => follow.FollowingId == userId
+                    && follow.Status == FollowStatus.Accepted)
+                .Select(follow => follow.Follower.Profile!);
+        }
+
+        profiles = profiles.Where(profile =>
+            profile.User.Status != UserStatus.Blocked
+            && (profile.UserId == viewerId
                 || !profile.IsPrivate
                 || _context.Follows.Any(viewerFollow => viewerFollow.FollowerId == viewerId
                     && viewerFollow.FollowingId == profile.UserId
-                    && viewerFollow.Status == FollowStatus.Accepted));
+                    && viewerFollow.Status == FollowStatus.Accepted))
+            && !_context.Blocks.Any(block =>
+                (block.BlockerId == viewerId && block.BlockedId == profile.UserId)
+                || (block.BlockedId == viewerId && block.BlockerId == profile.UserId)));
 
         var totalCount = await profiles.CountAsync(cancellationToken);
-        var items = await ProfileQuery(viewerId, profiles)
-            .OrderBy(profile => profile.Username)
-            .ThenBy(profile => profile.Id)
+        var pagedProfiles = profiles
+            .OrderBy(profile => profile.User.Username)
+            .ThenBy(profile => profile.UserId)
             .Skip((page - 1) * pageSize)
-            .Take(pageSize)
+            .Take(pageSize);
+        var items = await ProfileQuery(viewerId, pagedProfiles)
             .ToListAsync(cancellationToken);
         return PagedResult<UserProfileResponse>.Create(items, page, pageSize, totalCount);
     }
@@ -356,26 +372,13 @@ public class FollowRepository : IFollowRepository
             followingCount = 0;
         }
 
-        var incomingCount = viewerId == userId
-            ? await _context.Follows.CountAsync(
-                follow => follow.FollowingId == userId && follow.Status == FollowStatus.Pending,
-                cancellationToken)
-            : 0;
-        var outgoingCount = viewerId == userId
-            ? await _context.Follows.CountAsync(
-                follow => follow.FollowerId == userId && follow.Status == FollowStatus.Pending,
-                cancellationToken)
-            : 0;
-
         return new UserRelationshipResponse(
             userId,
             isFollowing,
             isFollowedBy,
             hasPendingRequest,
             followerCount,
-            followingCount,
-            incomingCount,
-            outgoingCount);
+            followingCount);
     }
 
     private async Task EnsureUsersExistAsync(long firstUserId, long secondUserId, CancellationToken cancellationToken)
@@ -387,6 +390,21 @@ public class FollowRepository : IFollowRepository
         if (users.Count != 2 || users.Any(user => user.Status == UserStatus.Blocked))
         {
             throw new NotFoundException("The requested user could not be found.");
+        }
+    }
+
+    private async Task EnsureTargetIsNotPrivilegedAsync(
+        long userId,
+        string operation,
+        CancellationToken cancellationToken)
+    {
+        var role = await _context.Users
+            .Where(user => user.Id == userId)
+            .Select(user => user.Role.Name)
+            .SingleAsync(cancellationToken);
+        if (role is RoleName.Admin or RoleName.Moderator)
+        {
+            throw new BadRequestException($"You cannot {operation} an administrator or moderator.");
         }
     }
 

@@ -10,6 +10,5 @@ public sealed record UserProfileResponse(
     int FollowerCount,
     int FollowingCount,
     bool IsFollowing,
-    bool IsFollowedBy,
-    bool HasPendingRequest
+    bool IsFollowedBy
 );
